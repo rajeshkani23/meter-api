@@ -1,0 +1,289 @@
+
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Meter API",
+    "version": "1.0.0",
+    "description": "API for retrieving transformer details, meter location and meter energy readings from the Urja Meter Ops portal."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/api/transformers": {
+      "get": {
+        "summary": "Get transformer details",
+        "description": "Returns transformer details for the requested page. The default page is 1.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number. Must be greater than or equal to 1.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transformer details retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformerPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/meters/{meterId}/location": {
+      "get": {
+        "summary": "Get meter location",
+        "description": "Returns latitude and longitude for the given meter ID.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeterId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meter location retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeterLocationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/meters/{meterId}/energy": {
+      "get": {
+        "summary": "Get meter energy readings",
+        "description": "Returns energy readings for the given meter ID.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MeterId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Meter energy readings retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeterEnergyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "MeterId": {
+        "name": "meterId",
+        "in": "path",
+        "required": true,
+        "description": "Meter ID used to retrieve meter information.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": ".*\\S.*"
+        },
+        "example": "J100001"
+      }
+    },
+    "schemas": {
+      "TransformerPageResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Transformer"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "example": 40
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "example": 20
+          }
+        }
+      },
+      "Transformer": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "DT-001"
+          },
+          "name": {
+            "type": "string",
+            "example": "Malviya Nagar DT 1"
+          },
+          "feederCode": {
+            "type": "string",
+            "example": "F-001"
+          },
+          "capacityKva": {
+            "type": "integer",
+            "example": 100
+          }
+        }
+      },
+      "MeterLocationResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MeterLocation"
+          }
+        }
+      },
+      "MeterLocation": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "example": "26.822136543835608"
+          },
+          "longitude": {
+            "type": "string",
+            "example": "75.90718190602279"
+          }
+        }
+      },
+      "MeterEnergyResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MeterEnergyReading"
+            }
+          }
+        }
+      },
+      "MeterEnergyReading": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "example": "23/06/2026 23:30"
+          },
+          "kwh": {
+            "type": "string",
+            "example": "12.50"
+          },
+          "kvah": {
+            "type": "string",
+            "example": "13.20"
+          },
+          "voltR": {
+            "type": "string",
+            "example": "230.5"
+          }
+        }
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request parameters.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorResponse"
+            }
+          }
+        }
+      },
+      "BadGateway": {
+        "description": "The upstream portal returned an unsuccessful response or could not be reached.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorResponse"
+            }
+          }
+        }
+      },
+      "ServiceUnavailable": {
+        "description": "The service is temporarily unable to complete the request.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}
